@@ -25,9 +25,14 @@ require (
 	github.com/shirou/gopsutil v2.19.10+incompatible
 	github.com/sirupsen/logrus v1.2.0
 	github.com/stretchr/testify v1.4.0
+	github.com/yuin/goldmark v1.3.2 // indirect
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.14.0
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/mod v0.4.1 // indirect
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a // indirect
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
+	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
