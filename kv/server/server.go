@@ -119,14 +119,13 @@ func (server *Server) RawScan(_ context.Context, req *kvrpcpb.RawScanRequest) (*
 	for i := 0; i < int(limit); i++ {
 		if iter.Valid() {
 			key := iter.Item().Key()
-			if key == nil {
-				break
-			}
-
 			val, err := iter.Item().Value()
-
 			// iterate to next
 			iter.Next()
+
+			if key == nil {
+				continue
+			}
 			if len(val) == 0 || err != nil {
 				continue
 			}
