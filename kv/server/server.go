@@ -127,7 +127,7 @@ func (server *Server) RawScan(_ context.Context, req *kvrpcpb.RawScanRequest) (*
 
 			// iterate to next
 			iter.Next()
-			if val == nil || err != nil {
+			if len(val) == 0 || err != nil {
 				continue
 			}
 
@@ -136,6 +136,8 @@ func (server *Server) RawScan(_ context.Context, req *kvrpcpb.RawScanRequest) (*
 				Value: val,
 			}
 			kvpairs = append(kvpairs, &kvpair)
+		} else {
+			break
 		}
 	}
 
