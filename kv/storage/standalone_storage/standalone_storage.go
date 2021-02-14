@@ -36,7 +36,7 @@ func (s *StandAloneStorage) Stop() error {
 
 func (s *StandAloneStorage) Reader(ctx *kvrpcpb.Context) (storage.StorageReader, error) {
 	// Your Code Here (1).
-	if s != nil {
+	if s == nil {
 		err := errors.New("StandAloneStorage does not exist")
 		return nil, err
 	}
@@ -71,7 +71,10 @@ func (s *StandAloneStorage) IterCF(cf string) engine_util.DBIterator {
 	txn := s.db.NewTransaction(false)
 	defer txn.Discard()
 
-	return engine_util.NewCFIterator(cf, txn)
+	iter := engine_util.NewCFIterator(cf, txn)
+	defer iter.Close()
+
+	return iter
 }
 
 func (s *StandAloneStorage) Close() {
