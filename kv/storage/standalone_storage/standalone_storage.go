@@ -6,6 +6,7 @@ import (
 	"github.com/pingcap-incubator/tinykv/kv/storage"
 	"github.com/pingcap-incubator/tinykv/kv/util/engine_util"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/kvrpcpb"
+	"github.com/pingcap/errors"
 )
 
 // StandAloneStorage is an implementation of `Storage` for a single-node TinyKV instance. It does not
@@ -53,6 +54,8 @@ func (s *StandAloneStorage) Write(ctx *kvrpcpb.Context, batch []storage.Modify) 
 			cf := modify.Cf()
 			key := modify.Key()
 			err = engine_util.DeleteCF(s.db, cf, key)
+		default:
+			err = errors.New("Modify other than Put and Delete are not supported")
 		}
 
 		if err != nil {
