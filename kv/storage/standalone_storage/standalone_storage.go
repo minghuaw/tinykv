@@ -34,6 +34,7 @@ func (s *StandAloneStorage) Stop() error {
 }
 
 func (s *StandAloneStorage) Reader(ctx *kvrpcpb.Context) (storage.StorageReader, error) {
+	// A custom type that implements StorageReader interface should be returned
 	// Your Code Here (1).
 	txn := s.db.NewTransaction(false)
 	reader := BadgerTxnReader{txn: txn}
