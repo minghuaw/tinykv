@@ -49,10 +49,7 @@ func (server *Server) RawGet(_ context.Context, req *kvrpcpb.RawGetRequest) (*kv
 
 	val, err := reader.GetCF(cf, key)
 	resp := kvrpcpb.RawGetResponse{}
-	if err != nil {
-		resp.NotFound = true
-	}
-	if val == nil {
+	if err != nil || val == nil {
 		resp.NotFound = true
 	}
 	resp.Value = val
@@ -61,6 +58,7 @@ func (server *Server) RawGet(_ context.Context, req *kvrpcpb.RawGetRequest) (*kv
 }
 
 func (server *Server) RawPut(_ context.Context, req *kvrpcpb.RawPutRequest) (*kvrpcpb.RawPutResponse, error) {
+	// Your Code Here (1).
 	context := req.Context
 	put := storage.Put{
 		Key:   req.Key,
@@ -76,7 +74,6 @@ func (server *Server) RawPut(_ context.Context, req *kvrpcpb.RawPutRequest) (*kv
 	if err != nil {
 		resp.Error = err.Error()
 	}
-	// Your Code Here (1).
 	return &resp, err
 }
 
@@ -110,7 +107,6 @@ func (server *Server) RawScan(_ context.Context, req *kvrpcpb.RawScanRequest) (*
 	}
 
 	iter := reader.IterCF(req.Cf)
-
 	iter.Seek(req.StartKey)
 
 	limit := req.Limit
@@ -138,7 +134,6 @@ func (server *Server) RawScan(_ context.Context, req *kvrpcpb.RawScanRequest) (*
 	}
 
 	resp.Kvs = kvpairs
-
 	return &resp, nil
 }
 
