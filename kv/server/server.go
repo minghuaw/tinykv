@@ -123,11 +123,8 @@ func (server *Server) RawScan(_ context.Context, req *kvrpcpb.RawScanRequest) (*
 			// iterate to next
 			iter.Next()
 
-			if key == nil {
-				continue
-			}
-			if len(val) == 0 || err != nil {
-				continue
+			if err != nil {
+				return nil, err
 			}
 
 			kvpair := kvrpcpb.KvPair{

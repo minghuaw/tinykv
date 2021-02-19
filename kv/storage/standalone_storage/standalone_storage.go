@@ -1,8 +1,6 @@
 package standalone_storage
 
 import (
-	"errors"
-
 	"github.com/Connor1996/badger"
 	"github.com/pingcap-incubator/tinykv/kv/config"
 	"github.com/pingcap-incubator/tinykv/kv/storage"
@@ -31,25 +29,31 @@ func (s *StandAloneStorage) Start() error {
 
 func (s *StandAloneStorage) Stop() error {
 	// Your Code Here (1).
-	return nil
+	return s.db.Close()
 }
 
 func (s *StandAloneStorage) Reader(ctx *kvrpcpb.Context) (storage.StorageReader, error) {
 	// Your Code Here (1).
-	if s == nil {
-		err := errors.New("StandAloneStorage does not exist")
-		return nil, err
-	}
-	return s, nil
+	txn := s.db.NewTransaction(false)
+	reader := BadgerTxnReader{txn: txn}
+	return &reader, nil
 }
 
 func (s *StandAloneStorage) Write(ctx *kvrpcpb.Context, batch []storage.Modify) error {
 	// Your Code Here (1).
+	var err error
 	for _, modify := range batch {
-		cf := modify.Cf()
-		key := modify.Key()
-		val := modify.Value()
-		err := engine_util.PutCF(s.db, cf, key, val)
+		switch modify.Data.(type) {
+		case storage.Put:
+			cf := modify.Cf()
+			key := modify.Key()
+			val := modify.Value()
+			err = engine_util.PutCF(s.db, cf, key, val)
+		case storage.Delete:
+			cf := modify.Cf()
+			key := modify.Key()
+			err = engine_util.DeleteCF(s.db, cf, key)
+		}
 
 		if err != nil {
 			return err
@@ -58,25 +62,24 @@ func (s *StandAloneStorage) Write(ctx *kvrpcpb.Context, batch []storage.Modify) 
 	return nil
 }
 
-func (s *StandAloneStorage) GetCF(cf string, key []byte) ([]byte, error) {
-	// set update to false for read-only transaction
-	txn := s.db.NewTransaction(false)
-	defer txn.Discard()
-
-	return engine_util.GetCFFromTxn(txn, cf, key)
+type BadgerTxnReader struct {
+	txn *badger.Txn
 }
 
-func (s *StandAloneStorage) IterCF(cf string) engine_util.DBIterator {
+func (b *BadgerTxnReader) GetCF(cf string, key []byte) ([]byte, error) {
 	// set update to false for read-only transaction
-	txn := s.db.NewTransaction(false)
-	defer txn.Discard()
-
-	iter := engine_util.NewCFIterator(cf, txn)
-	defer iter.Close()
-
-	return iter
+	val, err := engine_util.GetCFFromTxn(b.txn, cf, key)
+	if err == badger.ErrKeyNotFound {
+		return nil, nil
+	}
+	return val, nil
 }
 
-func (s *StandAloneStorage) Close() {
-	s.db.Close()
+func (b *BadgerTxnReader) IterCF(cf string) engine_util.DBIterator {
+	// set update to false for read-only transaction
+	return engine_util.NewCFIterator(cf, b.txn)
+}
+
+func (b *BadgerTxnReader) Close() {
+	b.txn.Discard()
 }
